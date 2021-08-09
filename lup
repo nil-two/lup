@@ -1,0 +1,118 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use Encode qw(encode_utf8 decode_utf8);
+use File::Basename qw(basename);
+use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat bundling);
+use Unicode::UCD qw(charprop);
+
+use open IO => ":encoding(UTF-8)";
+binmode STDIN, ":encoding(UTF-8)";
+binmode STDOUT, ":encoding(UTF-8)";
+binmode STDERR, ":encoding(UTF-8)";
+
+my $cmd_name = basename($0);
+my $usage = <<EOL;
+usage: $cmd_name [<option(s)>] [<file(s)>]
+line up text
+
+options:
+      --help   print usage
+EOL
+
+sub print_error_and_abort {
+    my ($error) = @_;
+    chomp $error;
+    print STDERR "$cmd_name: $error\n";
+    exit 1;
+}
+
+sub read_lines_from_argf {
+    my $lines = [];
+    while (my $line = <>) {
+        chomp $line;
+        push @$lines, $line;
+    }
+    return $lines;
+}
+
+sub eawidth { 
+  my ($text) = @_;
+  my $width = 0;
+  for my $ch (split //, $text) {
+    my $type = charprop(ord($ch), "East_Asian_Width");
+	if ($type eq "Fullwidth" || $type eq "Wide" || $type eq "Ambiguous") {
+		$width += 2;
+	} else {
+		$width += 1;
+	}
+  }
+  return $width;
+}
+
+sub make_table {
+	my ($lines) = @_;
+	my $table = [];
+	for my $line (@$lines) {
+		$line =~ s/^\s+|\s+$//g;
+		push @$table, [split /\s+/, $line];
+	}
+	return $table;
+}
+
+sub line_up_table {
+	my ($table) = @_;
+	my $widthes_by_rowis_and_colis = {};
+	my $max_widthes_by_colis       = {};
+	for (my $row_i = 0; $row_i < @$table; $row_i++) {
+		my $row = $table->[$row_i];
+		$widthes_by_rowis_and_colis->{$row_i} = {};
+		for (my $col_i = 0; $col_i < @$row; $col_i++) {
+			my $cell  = $row->[$col_i];
+			my $width = eawidth($cell);
+			$widthes_by_rowis_and_colis->{$row_i}{$col_i} = $width;
+			$max_widthes_by_colis->{$col_i} = $width if !exists($max_widthes_by_colis->{$col_i}) || $width > $max_widthes_by_colis->{$col_i};
+		}
+	}
+	for (my $row_i = 0; $row_i < @$table; $row_i++) {
+		my $row = $table->[$row_i];
+		for (my $col_i = 0; $col_i < @$row; $col_i++) {
+			my $cell      = $row->[$col_i];
+			my $width     = $widthes_by_rowis_and_colis->{$row_i}{$col_i};
+			my $max_width = $max_widthes_by_colis->{$col_i};
+			$row->[$col_i] = $cell . " "x($max_width - $width);
+		}
+	}
+}
+
+sub dump_table {
+	my ($table) = @_;
+	for my $row (@$table) {
+		print join(" ", @$row), "\n";
+	}
+}
+
+sub main {
+    local $SIG{__WARN__} = \&print_error_and_abort;
+
+    my $is_help = 0;
+    GetOptions(
+        "help" => \$is_help,
+    );
+    if ($is_help) {
+        print $usage;
+        exit 0;
+    }
+
+    eval {
+        my $lines = read_lines_from_argf;
+		my $table = make_table($lines);
+		line_up_table($table);
+		dump_table($table);
+    };
+    if ($@) {
+        print_error_and_abort($@);
+    }
+}
+main;
