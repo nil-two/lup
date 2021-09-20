@@ -81,7 +81,9 @@ sub line_up_table {
             my $cell      = $row->[$col_i];
             my $width     = $widthes_by_rowis_and_colis->{$row_i}{$col_i};
             my $max_width = $max_widthes_by_colis->{$col_i};
-            $row->[$col_i] = $cell . " "x($max_width - $width);
+            if ($col_i < $#$row) {
+                $row->[$col_i] = $cell . " "x($max_width - $width);
+            }
         }
     }
 }
