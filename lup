@@ -15,12 +15,12 @@ binmode STDERR, ":encoding(UTF-8)";
 my $cmd_name = basename($0);
 my $usage = <<EOL;
 usage: $cmd_name [<option(s)>] [<file(s)>]
-line up text
+line up lines
 
 options:
   -c, --count=COUNT     separate lines only COUNT times
   -i, --keep-indent     keep the first indent as indents
-  -s, --separator=SEP   separator lines by SEP
+  -s, --separator=SEP   separate lines by SEP
       --help            print usage
 EOL
 
