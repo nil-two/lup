@@ -92,13 +92,13 @@ Separate lines by SEP.
 
 ```
 $ cat src.txt
-Name=Duress
+name=Duress
 cmc    =1
 type_line= Sorcery
 oracle_text  = Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.
 
 $ cat src.txt | lup -s=
-Name        = Duress
+name        = Duress
 cmc         = 1
 type_line   = Sorcery
 oracle_text = Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.
