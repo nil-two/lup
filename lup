@@ -18,11 +18,10 @@ usage: $cmd_name [<option(s)>] [<file(s)>]
 line up text
 
 options:
-  -c, --count=COUNT      separate lines only COUNT times
-  -i, --keep-indent      keep the first indent as indents
-  -I, --no-keep-indent   ignore indents (default)
-  -s, --separator=SEP    separator lines by SEP
-      --help             print usage
+  -c, --count=COUNT     separate lines only COUNT times
+  -i, --keep-indent     keep the first indent as indents
+  -s, --separator=SEP   separator lines by SEP
+      --help            print usage
 EOL
 
 sub print_error_and_abort {
@@ -138,11 +137,10 @@ sub main {
     my $separator   = undef;
     my $is_help     = 0;
     GetOptions(
-        "count|c=i"        => \$count,
-        "keep-indent|i"    => sub { $keep_indent = 1 },
-        "no-keep-indent|I" => sub { $keep_indent = 0 },
-        "separator|s=s"    => \$separator,
-        "help"             => \$is_help,
+        "count|c=i"     => \$count,
+        "keep-indent|i" => \$keep_indent,
+        "separator|s=s" => \$separator,
+        "help"          => \$is_help,
     );
     if ($is_help) {
         print $usage;
