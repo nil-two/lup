@@ -15,7 +15,7 @@ binmode STDERR, ":encoding(UTF-8)";
 my $cmd_name = basename($0);
 my $usage = <<EOL;
 usage: $cmd_name [<option(s)>] [<file(s)>]
-line up lines.
+line up text.
 
 options:
   -c, --count=COUNT     separate lines only COUNT times

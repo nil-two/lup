@@ -24,7 +24,7 @@ Usage
 
 ```
 usage: lup [<option(s)>] [<file(s)>]
-line up lines.
+line up text.
 
 options:
   -c, --count=COUNT     separate lines only COUNT times
