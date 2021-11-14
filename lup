@@ -2,10 +2,10 @@
 use strict;
 use warnings;
 use utf8;
-use Encode qw(encode_utf8 decode_utf8);
-use File::Basename qw(basename);
+use Encode qw(encode_utf8 decode_utf8);                                      
+use File::Basename qw(basename);                                             
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat bundling);
-use Unicode::UCD qw(charprop);
+use Unicode::UCD qw(charprop);                                               
 
 use open IO => ":encoding(UTF-8)";
 binmode STDIN, ":encoding(UTF-8)";
@@ -18,8 +18,9 @@ usage: $cmd_name [<option(s)>] [<file(s)>]
 line up text
 
 options:
+  -c, --count=COUNT      separate lines only COUNT times
   -i, --keep-indent      keep the first indent as indents
-  -I, --no-keep-indent   ignore indents
+  -I, --no-keep-indent   ignore indents (default)
       --help             print usage
 EOL
 
@@ -66,13 +67,13 @@ sub eawidth {
 }
 
 sub line_up_lines {
-    my ($lines, $keep_indent) = @_;
+    my ($lines, $count, $keep_indent) = @_;
 
     my $cells        = [];
     my $first_indent = undef;
     for my $line (@$lines) {
         my $line_trimed = $line =~ s/^\s+|\s+$//gr;
-        my $row         = [split /\s+/, $line_trimed];
+        my $row         = [split(/\s+/, $line_trimed, $count+1)];
         push @$cells, $row;
         if ($keep_indent && !defined($first_indent)) {
             $first_indent = $line =~ s/^(\s+).*/$1/r;
@@ -128,9 +129,11 @@ sub dump_lines {
 sub main {
     local $SIG{__WARN__} = \&print_error_and_abort;
 
+    my $count       = -1;
     my $keep_indent = 0;
     my $is_help     = 0;
     GetOptions(
+        "count|c=i"        => \$count,
         "keep-indent|i"    => sub { $keep_indent = 1 },
         "no-keep-indent|I" => sub { $keep_indent = 0 },
         "help"             => \$is_help,
@@ -142,7 +145,7 @@ sub main {
 
     eval {
         my $lines  = read_lines_from_argf;
-        my $lines2 = line_up_lines($lines, $keep_indent);
+        my $lines2 = line_up_lines($lines, $count, $keep_indent);
         dump_lines($lines2);
     };
     if ($@) {
