@@ -18,7 +18,9 @@ usage: $cmd_name [<option(s)>] [<file(s)>]
 line up text
 
 options:
-      --help   print usage
+  -i, --keep-indent      keep the first indent as indents
+  -I, --no-keep-indent   ignore indents
+      --help             print usage
 EOL
 
 sub print_error_and_abort {
@@ -37,70 +39,101 @@ sub read_lines_from_argf {
     return $lines;
 }
 
-sub eawidth { 
+my $eawidth_ch_memo = {};
+sub eawidth_ch {
+    my ($ch) = @_;
+    if (exists($eawidth_ch_memo->{$ch})) {
+        return $eawidth_ch_memo->{$ch};
+    }
+    my $width;
+    my $type = charprop(ord($ch), "East_Asian_Width");
+    if ($type eq "Fullwidth" || $type eq "Wide" || $type eq "Ambiguous") {
+        $width = 2;
+    } else {
+        $width = 1;
+    }
+    $eawidth_ch_memo->{$ch} = $width;
+    return $width;
+}
+
+sub eawidth {
     my ($text) = @_;
     my $width = 0;
     for my $ch (split //, $text) {
-        my $type = charprop(ord($ch), "East_Asian_Width");
-        if ($type eq "Fullwidth" || $type eq "Wide" || $type eq "Ambiguous") {
-            $width += 2;
-        } else {
-            $width += 1;
-        }
+        $width += eawidth_ch($ch);
     }
     return $width;
 }
 
-sub make_table {
-    my ($lines) = @_;
-    my $table = [];
-    for my $line (@$lines) {
-        $line =~ s/^\s+|\s+$//g;
-        push @$table, [split /\s+/, $line];
-    }
-    return $table;
-}
+sub line_up_lines {
+    my ($lines, $keep_indent) = @_;
 
-sub line_up_table {
-    my ($table) = @_;
-    my $widthes_by_rowis_and_colis = {};
-    my $max_widthes_by_colis       = {};
-    for (my $row_i = 0; $row_i < @$table; $row_i++) {
-        my $row = $table->[$row_i];
-        $widthes_by_rowis_and_colis->{$row_i} = {};
-        for (my $col_i = 0; $col_i < @$row; $col_i++) {
-            my $cell  = $row->[$col_i];
-            my $width = eawidth($cell);
-            $widthes_by_rowis_and_colis->{$row_i}{$col_i} = $width;
-            $max_widthes_by_colis->{$col_i} = $width if !exists($max_widthes_by_colis->{$col_i}) || $width > $max_widthes_by_colis->{$col_i};
+    my $cells        = [];
+    my $first_indent = undef;
+    for my $line (@$lines) {
+        my $line_trimed = $line =~ s/^\s+|\s+$//gr;
+        my $row         = [split /\s+/, $line_trimed];
+        push @$cells, $row;
+        if ($keep_indent && !defined($first_indent)) {
+            $first_indent = $line =~ s/^(\s+).*/$1/r;
         }
     }
-    for (my $row_i = 0; $row_i < @$table; $row_i++) {
-        my $row = $table->[$row_i];
-        for (my $col_i = 0; $col_i < @$row; $col_i++) {
-            my $cell      = $row->[$col_i];
-            my $width     = $widthes_by_rowis_and_colis->{$row_i}{$col_i};
-            my $max_width = $max_widthes_by_colis->{$col_i};
-            if ($col_i < $#$row) {
-                $row->[$col_i] = $cell . " "x($max_width - $width);
+
+    my $widthes     = {};
+    my $max_widthes = {};
+    for (my $y = 0; $y < @$cells; $y++) {
+        $widthes->{$y} = {};
+        for (my $x = 0; $x < @{$cells->[$y]}; $x++) {
+            my $cell  = $cells->[$y][$x];
+            my $width = eawidth($cell);
+            $widthes->{$y}{$x} = $width;
+            if (!exists($max_widthes->{$x}) || $width > $max_widthes->{$x}) {
+                $max_widthes->{$x} = $width;
             }
         }
     }
+
+    my $cells2 = [];
+    for (my $y = 0; $y < @$cells; $y++) {
+        push @$cells2, [];
+        for (my $x = 0; $x < @{$cells->[$y]}; $x++) {
+            my $cell      = $cells->[$y][$x];
+            my $width     = $widthes->{$y}{$x};
+            my $max_width = $max_widthes->{$x};
+            my $cell2     = $cell . " " x ($max_width - $width);
+            push @{$cells2->[$y]}, $cell2;
+        }
+    }
+
+    my $lines2 = [];
+    for my $row (@$cells2) {
+        my $line2 = join(" ", @$row);
+        $line2 =~ s/\s$//;
+        if ($keep_indent && defined($first_indent)) {
+            $line2 = $first_indent . $line2;
+        }
+        push @$lines2, $line2;
+    }
+
+    return $lines2;
 }
 
-sub dump_table {
-    my ($table) = @_;
-    for my $row (@$table) {
-        print join(" ", @$row), "\n";
+sub dump_lines {
+    my ($lines) = @_;
+    for my $line (@$lines) {
+        print "$line\n";
     }
 }
 
 sub main {
     local $SIG{__WARN__} = \&print_error_and_abort;
 
-    my $is_help = 0;
+    my $keep_indent = 0;
+    my $is_help     = 0;
     GetOptions(
-        "help" => \$is_help,
+        "keep-indent|i"    => sub { $keep_indent = 1 },
+        "no-keep-indent|I" => sub { $keep_indent = 0 },
+        "help"             => \$is_help,
     );
     if ($is_help) {
         print $usage;
@@ -108,10 +141,9 @@ sub main {
     }
 
     eval {
-        my $lines = read_lines_from_argf;
-        my $table = make_table($lines);
-        line_up_table($table);
-        dump_table($table);
+        my $lines  = read_lines_from_argf;
+        my $lines2 = line_up_lines($lines, $keep_indent);
+        dump_lines($lines2);
     };
     if ($@) {
         print_error_and_abort($@);
