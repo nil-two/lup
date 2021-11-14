@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use utf8;
+use Encode qw(decode_utf8);
 use File::Basename qw(basename);                                             
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat bundling);
 use Unicode::UCD qw(charprop);                                               
@@ -138,7 +139,7 @@ sub main {
     GetOptions(
         "count|c=i"     => \$count,
         "keep-indent|i" => \$keep_indent,
-        "separator|s=s" => \$separator,
+        "separator|s=s" => sub { $separator = decode_utf8($_[1]) },
         "help"          => \$is_help,
     );
     if ($is_help) {
