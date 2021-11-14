@@ -144,7 +144,7 @@ sub main {
     );
     if ($is_help) {
         print $usage;
-        exit 0;
+        return;
     }
 
     eval {
