@@ -207,4 +207,36 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
+@test 'lup: can accept combined options' {
+  src=$(printf "%s\n" $'
+    var a =   10;
+      var b=20;
+        var c= 30;
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+    var a = 10;
+    var b = 20;
+    var c = 30;
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" -is= <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
+@test 'lup: can accept multibyte arguments' {
+  src=$(printf "%s\n" $'
+  あああ  ：  いいい
+  ううう：  えええ
+  おおお  ：かかか
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  あああ ： いいい
+  ううう ： えええ
+  おおお ： かかか
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" -s： <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
 # vim: ft=bash

@@ -61,7 +61,7 @@ sub eawidth_ch {
 sub eawidth {
     my ($text) = @_;
     my $width = 0;
-    for my $ch (split //, $text) {
+    for my $ch (split(//, $text)) {
         $width += eawidth_ch($ch);
     }
     return $width;
@@ -139,11 +139,14 @@ sub main {
     my $margin      = 1;
     my $separator   = undef;
     my $is_help     = 0;
+    foreach (@ARGV) {
+        $_ = decode_utf8($_);
+    }
     GetOptions(
-        "count|c=i"     => \$count,
-        "keep-indent|i" => \$keep_indent,
-        "margin|m=i"    => \$margin,
-        "separator|s=s" => sub { $separator = decode_utf8($_[1]) },
+        "c|count=i"     => \$count,
+        "i|keep-indent" => \$keep_indent,
+        "m|margin=i"    => \$margin,
+        "s|separator=s" => \$separator,
         "help"          => \$is_help,
     );
     if ($is_help) {
@@ -152,7 +155,7 @@ sub main {
     }
 
     eval {
-        my $lines  = read_lines_from_argf;
+        my $lines  = read_lines_from_argf();
         my $lines2 = line_up_lines($lines, $count, $keep_indent, $margin, $separator);
         dump_lines($lines2);
     };
