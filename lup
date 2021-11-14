@@ -21,6 +21,7 @@ options:
   -c, --count=COUNT      separate lines only COUNT times
   -i, --keep-indent      keep the first indent as indents
   -I, --no-keep-indent   ignore indents (default)
+  -s, --separator=SEP    separator lines by SEP
       --help             print usage
 EOL
 
@@ -67,13 +68,17 @@ sub eawidth {
 }
 
 sub line_up_lines {
-    my ($lines, $count, $keep_indent) = @_;
+    my ($lines, $count, $keep_indent, $separator) = @_;
 
-    my $cells        = [];
-    my $first_indent = undef;
+    my $cells           = [];
+    my $first_indent    = undef;
+    my $separator_regex = qr/\s+/;
+    if (defined($separator)) {
+        $separator_regex = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
+    }
     for my $line (@$lines) {
         my $line_trimed = $line =~ s/^\s+|\s+$//gr;
-        my $row         = [split(/\s+/, $line_trimed, $count+1)];
+        my $row         = [split($separator_regex, $line_trimed, $count+1)];
         push @$cells, $row;
         if ($keep_indent && !defined($first_indent)) {
             $first_indent = $line =~ s/^(\s+).*/$1/r;
@@ -108,8 +113,7 @@ sub line_up_lines {
 
     my $lines2 = [];
     for my $row (@$cells2) {
-        my $line2 = join(" ", @$row);
-        $line2 =~ s/\s$//;
+        my $line2 = join(" ", @$row) =~ s/\s*$//r;
         if ($keep_indent && defined($first_indent)) {
             $line2 = $first_indent . $line2;
         }
@@ -131,11 +135,13 @@ sub main {
 
     my $count       = -1;
     my $keep_indent = 0;
+    my $separator   = undef;
     my $is_help     = 0;
     GetOptions(
         "count|c=i"        => \$count,
         "keep-indent|i"    => sub { $keep_indent = 1 },
         "no-keep-indent|I" => sub { $keep_indent = 0 },
+        "separator|s=s"    => \$separator,
         "help"             => \$is_help,
     );
     if ($is_help) {
@@ -145,7 +151,7 @@ sub main {
 
     eval {
         my $lines  = read_lines_from_argf;
-        my $lines2 = line_up_lines($lines, $count, $keep_indent);
+        my $lines2 = line_up_lines($lines, $count, $keep_indent, $separator);
         dump_lines($lines2);
     };
     if ($@) {
