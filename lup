@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 use utf8;
-use Encode qw(encode_utf8 decode_utf8);                                      
 use File::Basename qw(basename);                                             
 use Getopt::Long qw(:config posix_default no_ignore_case gnu_compat bundling);
 use Unicode::UCD qw(charprop);                                               
@@ -68,16 +67,16 @@ sub eawidth {
 
 sub line_up_lines {
     my ($lines, $count, $keep_indent, $separator) = @_;
-
-    my $cells           = [];
-    my $first_indent    = undef;
-    my $separator_regex = qr/\s+/;
+    my $separator_pattern = qr/\s+/;
     if (defined($separator)) {
-        $separator_regex = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
+        $separator_pattern = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
     }
+
+    my $cells        = [];
+    my $first_indent = undef;
     for my $line (@$lines) {
         my $line_trimed = $line =~ s/^\s+|\s+$//gr;
-        my $row         = [split($separator_regex, $line_trimed, $count+1)];
+        my $row         = [split($separator_pattern, $line_trimed, $count+1)];
         push @$cells, $row;
         if ($keep_indent && !defined($first_indent)) {
             $first_indent = $line =~ s/^(\s+).*/$1/r;
