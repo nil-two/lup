@@ -139,6 +139,38 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
+@test 'lup: put N spaces between cells if -m passed' {
+  src=$(printf "%s\n" $'
+  a b  c
+  d   e    f
+  g     h      i
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  a  b  c
+  d  e  f
+  g  h  i
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" -m2 <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
+@test 'lup: put N spaces between cells if --margin passed' {
+  src=$(printf "%s\n" $'
+  a b  c
+  d   e    f
+  g     h      i
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  a  b  c
+  d  e  f
+  g  h  i
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" --margin 2 <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
 @test 'lup: separate lines by SEP if -s passed' {
   src=$(printf "%s\n" $'
   name=Duress

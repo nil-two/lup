@@ -20,6 +20,7 @@ line up lines.
 options:
   -c, --count=COUNT     separate lines only COUNT times
   -i, --keep-indent     keep the first indent as indents
+  -m, --margin=N        put N spaces between cells
   -s, --separator=SEP   separate lines by SEP
       --help            print usage
 EOL
@@ -67,7 +68,8 @@ sub eawidth {
 }
 
 sub line_up_lines {
-    my ($lines, $count, $keep_indent, $separator) = @_;
+    my ($lines, $count, $keep_indent, $margin, $separator) = @_;
+    my $margin_spaces     = " " x $margin;
     my $separator_pattern = qr/\s+/;
     if (defined($separator)) {
         $separator_pattern = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
@@ -112,7 +114,7 @@ sub line_up_lines {
 
     my $lines2 = [];
     for my $row (@$cells2) {
-        my $line2 = join(" ", @$row) =~ s/\s*$//r;
+        my $line2 = join($margin_spaces, @$row) =~ s/\s*$//r;
         if ($keep_indent && defined($first_indent)) {
             $line2 = $first_indent . $line2;
         }
@@ -134,11 +136,13 @@ sub main {
 
     my $count       = -1;
     my $keep_indent = 0;
+    my $margin      = 1;
     my $separator   = undef;
     my $is_help     = 0;
     GetOptions(
         "count|c=i"     => \$count,
         "keep-indent|i" => \$keep_indent,
+        "margin|m=i"    => \$margin,
         "separator|s=s" => sub { $separator = decode_utf8($_[1]) },
         "help"          => \$is_help,
     );
@@ -149,7 +153,7 @@ sub main {
 
     eval {
         my $lines  = read_lines_from_argf;
-        my $lines2 = line_up_lines($lines, $count, $keep_indent, $separator);
+        my $lines2 = line_up_lines($lines, $count, $keep_indent, $margin, $separator);
         dump_lines($lines2);
     };
     if ($@) {

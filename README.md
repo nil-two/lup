@@ -29,6 +29,7 @@ line up lines.
 options:
   -c, --count=COUNT     separate lines only COUNT times
   -i, --keep-indent     keep the first indent as indents
+  -m, --margin=N        put N spaces between cells
   -s, --separator=SEP   separate lines by SEP
       --help            print usage
 ```
@@ -84,6 +85,20 @@ $ cat src.txt | lup -i
     let a = 10;
     let b = 20;
     let c = 30;
+```
+
+### -m, --margin=N
+
+Put N spaces between cells.
+
+```
+$ cat src.txt
+server_name     localhost;
+  listen 80;
+
+$ cat src.txt | lup -m2
+server_name  localhost;
+listen       80;
 ```
 
 ### -s, --separator=SEP
