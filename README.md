@@ -1,6 +1,8 @@
 lup
 ===
 
+![CI](https://github.com/kusabashira/lup/workflows/CI/badge.svg)
+
 Line up text.
 
 ```
