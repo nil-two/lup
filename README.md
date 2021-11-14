@@ -12,9 +12,9 @@ Goblin_Chainwhirler 3 3
 
 $ cat src.txt | lup
 Name                Power Toughness
-Ghitu_Lavarunner    1     2        
-Viashino_Pyromancer 2     1        
-Goblin_Chainwhirler 3     3        
+Ghitu_Lavarunner    1     2
+Viashino_Pyromancer 2     1
+Goblin_Chainwhirler 3     3
 ```
 
 Usage
@@ -22,10 +22,13 @@ Usage
 
 ```
 usage: lup [<option(s)>] [<file(s)>]
-line up text
+line up lines.
 
 options:
-      --help   print usage
+  -c, --count=COUNT     separate lines only COUNT times
+  -i, --keep-indent     keep the first indent as indents
+  -s, --separator=SEP   separate lines by SEP
+      --help            print usage
 ```
 
 Requirements
@@ -50,6 +53,54 @@ Note: In this example, `$HOME/bin` must be included in `$PATH`.
 
 Options
 -------
+
+### -c, --count=COUNT
+
+Separate lines only COUNT times.
+
+```
+$ cat src.txt
+name    = Ancestral Recall
+  oracle_text =         Target player draws three cards.
+
+$ cat src.txt | lup -c2
+name        = Ancestral Recall
+oracle_text = Target player draws three cards.
+```
+
+### -i, --keep-indent
+
+Keep the first indent as indents.
+
+```
+$ cat src.txt
+    let a = 10;
+      let b     = 20;
+let c =   30;
+
+$ cat src.txt | lup -i
+    let a = 10;
+    let b = 20;
+    let c = 30;
+```
+
+### -s, --separator=SEP
+
+Separate lines by SEP.
+
+```
+$ cat src.txt
+Name=Duress
+cmc    =1
+type_line= Sorcery
+oracle_text  = Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.
+
+$ cat src.txt | lup -s=
+Name        = Duress
+cmc         = 1
+type_line   = Sorcery
+oracle_text = Target opponent reveals their hand. You choose a noncreature, nonland card from it. That player discards that card.
+```
 
 ### --help
 
