@@ -12,8 +12,8 @@ binmode STDIN, ":encoding(UTF-8)";
 binmode STDOUT, ":encoding(UTF-8)";
 binmode STDERR, ":encoding(UTF-8)";
 
-my $cmd_name = basename($0);
-my $usage = <<EOL;
+my $cmd_name  = basename($0);
+my $cmd_usage = <<EOL;
 usage: $cmd_name [<option(s)>] [<file(s)>]
 line up text.
 
@@ -113,8 +113,8 @@ sub line_up_lines {
     }
 
     my $lines2 = [];
-    for my $row (@$cells2) {
-        my $line2 = join($margin_spaces, @$row) =~ s/\s*$//r;
+    for my $row2 (@$cells2) {
+        my $line2 = join($margin_spaces, @$row2) =~ s/\s*$//r;
         if ($keep_indent && defined($first_indent)) {
             $line2 = $first_indent . $line2;
         }
@@ -150,7 +150,7 @@ sub main {
         "help"          => \$is_help,
     );
     if ($is_help) {
-        print $usage;
+        print $cmd_usage;
         return;
     }
 
