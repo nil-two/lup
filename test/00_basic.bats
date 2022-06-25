@@ -139,6 +139,22 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
+@test 'lup: keep the first indent as indents even if zero width if --keep-indent passed' {
+  src=$(printf "%s\n" $'
+  1 100 10000
+  100 10000 1
+    10000 1 100
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  1     100   10000
+  100   10000 1
+  10000 1     100
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" -i <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
 @test 'lup: put N spaces between cells if -m passed' {
   src=$(printf "%s\n" $'
   a b  c
