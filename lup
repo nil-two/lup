@@ -21,6 +21,7 @@ options:
   -c, --count=COUNT     separate lines only COUNT times
   -i, --keep-indent     keep the first indent as indents
   -m, --margin=N        put N spaces between cells
+  -p, --pack-separator  pack separator cells and non-separator cells
   -s, --separator=SEP   separate lines by SEP
       --help            print usage
 EOL
@@ -68,21 +69,36 @@ sub eawidth {
 }
 
 sub line_up_lines {
-    my ($lines, $count, $keep_indent, $margin, $separator) = @_;
+    my ($lines, $count, $keep_indent, $margin, $pack_separator, $separator) = @_;
     my $margin_spaces     = " " x $margin;
     my $separator_pattern = qr/\s+/;
+    my $separator_check_pattern = undef;
     if (defined($separator)) {
         $separator_pattern = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
     }
 
-    my $cells        = [];
-    my $first_indent = undef;
+    my $cells              = [];
+    my $first_indent       = "";
+    my $first_indent_found = 0;
     for my $line (@$lines) {
         my $line_trimed = $line =~ s/^\s+|\s+$//gr;
         my $row         = [split($separator_pattern, $line_trimed, $count+1)];
-        push @$cells, $row;
-        if ($keep_indent && !defined($first_indent)) {
-            $first_indent = $line =~ s/^(\s*).*/$1/r;
+        if ($pack_separator && defined($separator)) {
+            my $row_packed = [];
+            for my $cell (@$row) {
+                if ($cell =~ $separator_pattern && @$row_packed >= 1) {
+                    $row_packed->[$#$row_packed] .= $cell;
+                } else {
+                    push @$row_packed, $cell;
+                }
+            }
+            push @$cells, $row_packed;
+        } else {
+            push @$cells, $row;
+        }
+        if ($keep_indent && !$first_indent_found) {
+            $first_indent       = $line =~ s/^(\s*).*/$1/r;
+            $first_indent_found = 1;
         }
     }
 
@@ -115,7 +131,7 @@ sub line_up_lines {
     my $lines2 = [];
     for my $row2 (@$cells2) {
         my $line2 = join($margin_spaces, @$row2) =~ s/\s*$//r;
-        if ($keep_indent && defined($first_indent)) {
+        if ($keep_indent) {
             $line2 = $first_indent . $line2;
         }
         push @$lines2, $line2;
@@ -134,20 +150,22 @@ sub dump_lines {
 sub main {
     local $SIG{__WARN__} = \&print_error_and_abort;
 
-    my $count       = -1;
-    my $keep_indent = 0;
-    my $margin      = 1;
-    my $separator   = undef;
-    my $is_help     = 0;
+    my $count          = -1;
+    my $keep_indent    = 0;
+    my $margin         = 1;
+    my $pack_separator = 0;
+    my $separator      = undef;
+    my $is_help        = 0;
     foreach (@ARGV) {
         $_ = decode_utf8($_);
     }
     GetOptions(
-        "c|count=i"     => \$count,
-        "i|keep-indent" => \$keep_indent,
-        "m|margin=i"    => \$margin,
-        "s|separator=s" => \$separator,
-        "help"          => \$is_help,
+        "c|count=i"        => \$count,
+        "i|keep-indent"    => \$keep_indent,
+        "m|margin=i"       => \$margin,
+        "p|pack-separator" => \$pack_separator,
+        "s|separator=s"    => \$separator,
+        "help"             => \$is_help,
     );
     if ($is_help) {
         print $cmd_usage;
@@ -156,7 +174,7 @@ sub main {
 
     eval {
         my $lines  = read_lines_from_argf();
-        my $lines2 = line_up_lines($lines, $count, $keep_indent, $margin, $separator);
+        my $lines2 = line_up_lines($lines, $count, $keep_indent, $margin, $pack_separator, $separator);
         dump_lines($lines2);
     };
     if ($@) {

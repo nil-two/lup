@@ -30,6 +30,7 @@ options:
   -c, --count=COUNT     separate lines only COUNT times
   -i, --keep-indent     keep the first indent as indents
   -m, --margin=N        put N spaces between cells
+  -p, --pack-separator  pack separator cells and non-separator cells
   -s, --separator=SEP   separate lines by SEP
       --help            print usage
 ```
@@ -99,6 +100,25 @@ server_name     localhost;
 $ cat src.txt | lup -m2
 server_name  localhost;
 listen       80;
+```
+
+### -p, --pack-separator
+
+Pack separator cells and non-separator cells.
+```
+$ cat src.txt
+x,y,z
+10,20,30
+ 40,  50,   60
+70   ,  80  ,90
+100 , 110 , 120
+
+$ cat src.txt | lup -ps=
+x,   y,   z
+10,  20,  30
+40,  50,  60
+70,  80,  90
+100, 110, 120
 ```
 
 ### -s, --separator=SEP

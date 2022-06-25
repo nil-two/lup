@@ -187,6 +187,46 @@ check() {
   [[ $(cat "$stdout") == $dst ]]
 }
 
+@test 'lup: pack separator cell and non-separator cells if -p passed' {
+  src=$(printf "%s\n" $'
+  aXcP5b45MFXsdA597LJN  ,9Vd3OJD2Qt5, b4u8,U
+  BLs0l6g, Yn6gnRg9DTW   , 0F13g4jtUlBJ9u, X0ZaBYtH
+  x_,   KSjNxLajkFt ,D3pWfOVgN  ,  3
+  zaB  ,   2h, hpe5R62XuAJtdnncJy ,vvoppS9cy9_nE
+  1vMtsytuHILB,   4EVR_,  FoRFHKgIFy6GbD6sVE  , PmuFDS
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  aXcP5b45MFXsdA597LJN, 9Vd3OJD2Qt5, b4u8,               U
+  BLs0l6g,              Yn6gnRg9DTW, 0F13g4jtUlBJ9u,     X0ZaBYtH
+  x_,                   KSjNxLajkFt, D3pWfOVgN,          3
+  zaB,                  2h,          hpe5R62XuAJtdnncJy, vvoppS9cy9_nE
+  1vMtsytuHILB,         4EVR_,       FoRFHKgIFy6GbD6sVE, PmuFDS
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" -ps, <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
+@test 'lup: pack separator cell and non-separator cells if --pack-separator passed' {
+  src=$(printf "%s\n" $'
+  aXcP5b45MFXsdA597LJN  ,9Vd3OJD2Qt5, b4u8,U
+  BLs0l6g, Yn6gnRg9DTW   , 0F13g4jtUlBJ9u, X0ZaBYtH
+  x_,   KSjNxLajkFt ,D3pWfOVgN  ,  3
+  zaB  ,   2h, hpe5R62XuAJtdnncJy ,vvoppS9cy9_nE
+  1vMtsytuHILB,   4EVR_,  FoRFHKgIFy6GbD6sVE  , PmuFDS
+  ' | sed -e '1d' -e 's/^  //')
+  dst=$(printf "%s\n" $'
+  aXcP5b45MFXsdA597LJN, 9Vd3OJD2Qt5, b4u8,               U
+  BLs0l6g,              Yn6gnRg9DTW, 0F13g4jtUlBJ9u,     X0ZaBYtH
+  x_,                   KSjNxLajkFt, D3pWfOVgN,          3
+  zaB,                  2h,          hpe5R62XuAJtdnncJy, vvoppS9cy9_nE
+  1vMtsytuHILB,         4EVR_,       FoRFHKgIFy6GbD6sVE, PmuFDS
+  ' | sed -e '1d' -e 's/^  //')
+  check "$lup" --pack-separator --separator=, <<< "$src"
+  [[ $(cat "$exitcode") == 0 ]]
+  [[ $(cat "$stdout") == $dst ]]
+}
+
 @test 'lup: separate lines by SEP if -s passed' {
   src=$(printf "%s\n" $'
   name=Duress
