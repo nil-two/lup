@@ -1,7 +1,7 @@
 lup
 ===
 
-![CI](https://github.com/nil2nekoni/lup/workflows/CI/badge.svg)
+![CI](https://github.com/nil-two/lup/workflows/CI/badge.svg)
 
 Line up text.
 
@@ -49,7 +49,7 @@ Installation
 ### Example
 
 ```
-$ curl -L https://raw.githubusercontent.com/nil2nekoni2/lup/master/lup > ~/bin/lup
+$ curl -L https://raw.githubusercontent.com/nil-two/lup/master/lup > ~/bin/lup
 $ chmod +x ~/bin/lup
 ```
 
