@@ -23,7 +23,7 @@ options:
   -m, --margin=N        put N spaces between cells
   -p, --pack-separator  pack separator cells and non-separator cells
   -s, --separator=SEP   separate lines by SEP
-      --help            print usage
+      --help            print usage and exit
 EOL
 
 sub print_error_and_abort {

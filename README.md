@@ -23,7 +23,7 @@ Usage
 -----
 
 ```
-usage: lup [<option(s)>] [<file(s)>]
+$ lup [<option(s)>] [<file(s)>]
 line up text.
 
 options:
@@ -32,7 +32,7 @@ options:
   -m, --margin=N        put N spaces between cells
   -p, --pack-separator  pack separator cells and non-separator cells
   -s, --separator=SEP   separate lines by SEP
-      --help            print usage
+      --help            print usage and exit
 ```
 
 Requirements
