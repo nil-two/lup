@@ -72,7 +72,6 @@ sub line_up_lines {
     my ($lines, $count, $keep_indent, $margin, $pack_separator, $separator) = @_;
     my $margin_spaces     = " " x $margin;
     my $separator_pattern = qr/\s+/;
-    my $separator_check_pattern = undef;
     if (defined($separator)) {
         $separator_pattern = qr/\s*(?=@{[quotemeta($separator)]})|(?<=@{[quotemeta($separator)]})\s*/;
     }
